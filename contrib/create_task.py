@@ -176,18 +176,20 @@ def get_next_task_number(tasks_dir: Path) -> int:
 
 def create_instruction_md(task_data: Dict) -> str:
     """Generate instruction.md content."""
-    content = f"""{task_data['description']}
-
-**Requirements:**
-"""
-    for req in task_data['requirements']:
-        content += f"- {req}\n"
+    content = task_data['description']
+    
+    # Only add requirements if there are any
+    if task_data.get('requirements'):
+        content += "\n\n**Requirements:**\n"
+        for req in task_data['requirements']:
+            content += f"- {req}\n"
+    
+    # Only add task detail if there is one
+    if task_data.get('task_detail'):
+        content += f"\n**Task:**\n\n{task_data['task_detail']}\n"
     
     content += f"""
-**Task:**
-
-{task_data['task_detail']}
-
+    
 **Output Format:**
 
 Submit your answer in the following format:
@@ -195,10 +197,6 @@ Submit your answer in the following format:
 ```
 <answer>{task_data['answer_format']}</answer>
 ```
-
-**Example:** `<answer>{task_data['answer_example']}</answer>`
-
-{task_data['format_explanation']}
 """
     return content
 
@@ -353,8 +351,6 @@ Examples:
 """)
     format_example = get_input("Answer format example (e.g., 'city name', 'number')", "your_answer")
     task_data['answer_format'] = format_example
-    task_data['answer_example'] = format_example
-    task_data['format_explanation'] = ""
     
     # Simplified - no separate requirements/task_detail needed
     task_data['requirements'] = []
