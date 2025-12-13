@@ -200,6 +200,46 @@ Each task produces a JSON file in the output directory (e.g., `results/task-name
 | `docker_port` | integer | Docker port used for this task |
 | `client_type` | string | Sandbox client type (unified, browser, etc.) |
 
+## Contributing
+
+We'd love your help in building CocoaBench! 🎉 Contributions of new benchmark tasks are very welcome.
+
+> 💡 Please remember to encrypt your task before submitting a PR — this keeps our benchmark data safe and ensures fair evaluation for everyone.
+
+### Quick Start for Contributors
+
+1. **Fork this repository** and clone your fork
+
+2. **Read the [Contribution Guide](contrib/CONTRIBUTING.md)**
+
+3. **Create your task** using the interactive wizard:
+   ```bash
+   cd contrib
+   python create_task.py
+   ```
+   Or manually create and revise `instruction.md`, `evaluation.md`, `solution.md`, `metadata.json` in `contributed-tasks/your-task-name/`
+
+4. **Validate and encrypt your task:**
+   ```bash
+   cd contrib
+   python validate_task.py <your-task-name>
+   python encrypt_tasks.py --task <your-task-name>
+   ```
+
+5. **Submit a Pull Request** — we look forward to seeing your task!
+
+### Contribution Tools
+
+| Tool | Description |
+|------|-------------|
+| `create_task.py` | Interactive wizard for creating new tasks |
+| `validate_task.py` | Validate task structure and encryption |
+| `encrypt_tasks.py` | Encrypt task files before submission (required!) |
+| `decrypt_tasks.py` | Decrypt task files for local editing |
+| `CONTRIBUTING.md` | Comprehensive guide for task creation |
+
+For detailed information on task requirements, file specifications, and best practices, see [`contrib/CONTRIBUTING.md`](contrib/CONTRIBUTING.md).
+
 ## Setup
 
 ### Prerequisites
