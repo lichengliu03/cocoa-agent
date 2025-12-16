@@ -20,13 +20,17 @@ python create_task.py
 # 2. Validate your task
 python validate_task.py your-task-name
 
-# 3. Encrypt before submitting PR
+# 3. Test with an AI agent (Required!)
+#    Recommended agents: Gemini 3 Pro, ChatGPT Agent, Claude 4.5
+#    Update evaluation.md with results and chat transcript link
+
+# 4. Encrypt before submitting PR
 python encrypt_tasks.py --task your-task-name
 
-# 4. Validate encryption
+# 5. Validate encryption
 python validate_task.py your-task-name --check-encrypted
 
-# 5. Submit Pull Request
+# 6. Submit Pull Request
 ```
 
 ---
@@ -125,9 +129,13 @@ See the templates below or check `cocoabench-example-tasks/` for examples.
 python validate_task.py your-task-name
 ```
 
-### Step 3: Test with an AI Agent (Optional)
+### Step 3: Test with an AI Agent (Required)
 
-Run your task with an agent to verify it works as expected.
+> ⚠️ **Important:** Please test your task with at least one AI agent before submitting.
+
+**Recommended agents:** Gemini 3 Pro, ChatGPT Agent, Claude 4.5
+
+After testing, update `evaluation.md` with the agent's performance and **include a link to the chat transcript**.
 
 ### Step 4: Encrypt Your Task
 
@@ -272,8 +280,11 @@ Contains the expected answer and initialization resources.
 
 ## Agent Output Example
 
-[To be filled after agent testing]
+[Agent name]: [result], ([Correct/Incorrect], [time])
+Chat transcript: [link to chat]
 ```
+
+> ⚠️ **Required:** Please test with at least one agent (recommended: Gemini 3 Pro, ChatGPT Agent, Claude 4.5) and include the chat transcript link.
 
 **⚠️ Evaluation Criteria Rule:**
 

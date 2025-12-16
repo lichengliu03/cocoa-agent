@@ -203,6 +203,7 @@ Submit your answer in the following format:
 
 def create_evaluation_md(task_data: Dict) -> str:
     """Generate evaluation.md content."""
+    agent_output = task_data.get('agent_output', '[Agent name]: [result], ([Correct/Incorrect], [time])\nChat transcript: [link to chat]')
     content = f"""# Evaluation for Task {task_data['id']}
 
 ## Initialization
@@ -215,7 +216,7 @@ def create_evaluation_md(task_data: Dict) -> str:
 
 ## Agent Output Example
 
-[To be filled after agent testing]
+{agent_output}
 """
     return content
 
@@ -282,7 +283,7 @@ Reference: https://cocoabench.github.io/#examples
     tasks_dir = project_root / 'contributed-tasks'
     
     task_data = {}
-    total_steps = 6
+    total_steps = 7
     
     # =====================
     # Step 1: Basic Info
@@ -422,9 +423,37 @@ The URLs will be saved to assets/urls.txt{Colors.END}
         task_data['initialization'] = f"Host UI: {url}"
     
     # =====================
-    # Step 6: Review & Create
+    # Step 6: Agent Testing
     # =====================
-    print_step(6, total_steps, "Review & Create")
+    print_step(6, total_steps, "Agent Testing")
+    print(f"""
+{Colors.CYAN}Have you tested this task with an AI agent?{Colors.END}
+
+Recommended agents: Gemini 3 Pro, ChatGPT Agent, Claude 4.5
+Please include the chat transcript link when you test.
+""")
+    
+    has_tested = get_yes_no("Have you already tested with an agent?", default=False)
+    
+    if has_tested:
+        agent_name = get_input("Agent name (e.g., 'ChatGPT Agent')")
+        agent_result = get_input("Agent result")
+        is_correct = get_yes_no("Did the agent get the correct answer?", default=False)
+        time_taken = get_input("Time taken (e.g., '5min')", required=False) or "N/A"
+        chat_link = get_input("Chat transcript link")
+        
+        correctness = "Correct" if is_correct else "Incorrect"
+        task_data['agent_output'] = f"{agent_name}: {agent_result}, ({correctness}, {time_taken})\nChat transcript: {chat_link}"
+        print_success("Agent test results recorded!")
+    else:
+        task_data['agent_output'] = "[Agent name]: [result], ([Correct/Incorrect], [time])\nChat transcript: [link to chat]"
+        print_warning("Remember to test with an agent before submitting!")
+        print_info("You can edit evaluation.md later to add test results.")
+    
+    # =====================
+    # Step 7: Review & Create
+    # =====================
+    print_step(7, total_steps, "Review & Create")
     print(f"""
 {Colors.CYAN}Here's a summary of your task:{Colors.END}
 
@@ -493,18 +522,44 @@ The URLs will be saved to assets/urls.txt{Colors.END}
     for f in files_created:
         print(f"  • {f}")
     
-    print(f"""
+    # Show different next steps based on whether agent testing is done
+    if task_data.get('agent_output', '').startswith('[Agent name]'):
+        # Not tested yet
+        print(f"""
 {Colors.BOLD}What's next?{Colors.END}
 
 1. {Colors.CYAN}Review{Colors.END} the generated files in {task_folder}
 
 2. {Colors.CYAN}Validate{Colors.END} your task:
-  python validate_task.py {task_name}
+   python validate_task.py {task_name}
 
-3. {Colors.CYAN}Encrypt{Colors.END} before submitting:
+3. {Colors.YELLOW}Test with an AI Agent (Required){Colors.END}
+   Test with at least one agent (recommended: Gemini 3 Pro, ChatGPT Agent, Claude 4.5)
+   Then edit {task_folder}/evaluation.md to add results and chat transcript link
+
+4. {Colors.CYAN}Encrypt{Colors.END} before submitting:
    python encrypt_tasks.py --task {task_name}
 
-4. {Colors.CYAN}Submit{Colors.END} a Pull Request on GitHub
+5. {Colors.CYAN}Submit{Colors.END} a Pull Request on GitHub
+
+{Colors.BOLD}Need help?{Colors.END} See CONTRIBUTING.md for detailed instructions.
+""")
+    else:
+        # Already tested
+        print(f"""
+{Colors.BOLD}What's next?{Colors.END}
+
+1. {Colors.CYAN}Review{Colors.END} the generated files in {task_folder}
+
+2. {Colors.CYAN}Validate{Colors.END} your task:
+   python validate_task.py {task_name}
+
+3. {Colors.GREEN}Agent Testing{Colors.END} ✓ Already recorded in evaluation.md
+
+4. {Colors.CYAN}Encrypt{Colors.END} before submitting:
+   python encrypt_tasks.py --task {task_name}
+
+5. {Colors.CYAN}Submit{Colors.END} a Pull Request on GitHub
 
 {Colors.BOLD}Need help?{Colors.END} See CONTRIBUTING.md for detailed instructions.
 """)
