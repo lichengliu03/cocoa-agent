@@ -20,8 +20,9 @@ python create_task.py
 # 2. Validate your task
 python validate_task.py your-task-name
 
-# 3. Test with an AI agent (Required!)
-#    Recommended agents: Gemini 3 Pro, ChatGPT Agent, Claude 4.5
+# 3. Test difficulty with an AI agent
+#    Recommended: Gemini 3 Pro, ChatGPT Agent, Claude 4.5
+#    At least one agent should fail — that's what makes a great benchmark task!
 #    Update evaluation.md with results and chat transcript link
 
 # 4. Encrypt before submitting PR
@@ -129,13 +130,13 @@ See the templates below or check `cocoabench-example-tasks/` for examples.
 python validate_task.py your-task-name
 ```
 
-### Step 3: Test with an AI Agent (Required)
+### Step 3: Test Difficulty with an AI Agent (Required)
 
-> ⚠️ **Important:** Please test your task with at least one AI agent before submitting.
+> 🎯 **Goal:** At least one AI agent should fail to solve your task correctly. This is what makes a benchmark task valuable — if all agents can easily solve it, it won't help us measure progress!
 
 **Recommended agents:** Gemini 3 Pro, ChatGPT Agent, Claude 4.5
 
-After testing, update `evaluation.md` with the agent's performance and **include a link to the chat transcript**.
+After testing, update `evaluation.md` with the agent's performance and **include a link to the chat transcript**. If all agents succeed, consider making the task more challenging — we're happy to help refining great task ideas!
 
 ### Step 4: Encrypt Your Task
 
@@ -252,7 +253,7 @@ Contains the expected answer and initialization resources.
 Chat transcript: [link to chat]
 ```
 
-> ⚠️ **Required:** Please test with at least one agent (recommended: Gemini 3 Pro, ChatGPT Agent, Claude 4.5) and include the chat transcript link.
+> 🎯 **Goal:** At least one agent should fail! Test with one agent (recommended: Gemini 3 Pro, ChatGPT Agent, or Claude 4.5) that fails and include the chat transcript link.
 
 **⚠️ Evaluation Criteria Rule:**
 

@@ -425,9 +425,13 @@ The URLs will be saved to assets/urls.txt{Colors.END}
     # =====================
     # Step 6: Agent Testing
     # =====================
-    print_step(6, total_steps, "Agent Testing")
+    print_step(6, total_steps, "Test Difficulty with an AI Agent")
     print(f"""
 {Colors.CYAN}Have you tested this task with an AI agent?{Colors.END}
+
+{Colors.YELLOW}Goal: At least one agent should fail to solve your task correctly.{Colors.END}
+This is what makes a benchmark task valuable! If all agents succeed easily,
+consider making it more challenging.
 
 Recommended agents: Gemini 3 Pro, ChatGPT Agent, Claude 4.5
 Please include the chat transcript link when you test.
@@ -533,9 +537,10 @@ Please include the chat transcript link when you test.
 2. {Colors.CYAN}Validate{Colors.END} your task:
    python validate_task.py {task_name}
 
-3. {Colors.YELLOW}Test with an AI Agent (Required){Colors.END}
-   Test with at least one agent (recommended: Gemini 3 Pro, ChatGPT Agent, Claude 4.5)
-   Then edit {task_folder}/evaluation.md to add results and chat transcript link
+3. {Colors.YELLOW}Test Difficulty with an AI Agent (Required){Colors.END}
+   Goal: At least one agent should fail!
+   Recommended: Gemini 3 Pro, ChatGPT Agent, Claude 4.5
+   Edit {task_folder}/evaluation.md to add results and chat transcript link
 
 4. {Colors.CYAN}Encrypt{Colors.END} before submitting:
    python encrypt_tasks.py --task {task_name}
