@@ -170,41 +170,9 @@ git commit -m "Add task: your-task-name"
 git push origin task/your-task-name
 ```
 
-Then open a PR on GitHub. We'd love to hear:
-- What your task is about
-- What skills it tests
-- Any interesting challenges you encountered while creating it
-
----
-
-## Submitting a Pull Request
-
-Once your task is ready and encrypted:
-
-1. **Fork the repository** (if you haven't already)
-
-2. **Create a new branch** for your task:
-   ```bash
-   git checkout -b task/<your-task-name>
-```
-
-3. **Commit your changes**:
-   ```bash
-   git add contributed-tasks/<your-task-name>/
-   git commit -m "Add task: <your-task-name>"
-   ```
-
-4. **Push to your fork**:
-   ```bash
-   git push origin task/<your-task-name>
-   ```
-
-5. **Open a Pull Request** on GitHub with:
-   - A clear title: `[New Task] <your-task-name>`
-   - Description of what the task tests
-   - Confirmation that you've validated and encrypted the task
-
-6. **Wait for review** — we'll take a look and may have some feedback. Thanks for your patience!
+Then open a PR on GitHub with:
+- **Title:** `[New Task] your-task-name`
+- **Description:** What your task is about, what skills it tests, and any interesting challenges you encountered
 
 ---
 
@@ -316,20 +284,6 @@ When a task requires multiple resources, list each on a separate line with clear
 - Data: https://drive.google.com/file/d/xyz789/view
 - Host UI: https://example.com/app
 ```
-
-Or use a structured format:
-
-```markdown
-## Initialization
-
-| Resource | URL/Path |
-|----------|----------|
-| Input Image | https://drive.google.com/file/d/abc123/view |
-| Reference Data | https://drive.google.com/file/d/xyz789/view |
-| Web Portal | https://example.com/app |
-```
-
----
 
 ### 3. `solution.md` – Human Solution Walkthrough
 
