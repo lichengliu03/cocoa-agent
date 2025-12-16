@@ -57,40 +57,6 @@ Feel free to browse our [example tasks](https://cocoabench.github.io/#examples) 
 
 ---
 
-## Task Structure
-
-Your contributed tasks will go in the `contributed-tasks/` folder. (The `cocoabench-example-tasks/` folder contains reference examples you can learn from.)
-
-**Before encryption:**
-```
-contributed-tasks/
-└── your-task-name/
-    ├── instruction.md        # Task instruction (required)
-    ├── evaluation.md         # Evaluation criteria (required)
-    ├── solution.md           # Solution walkthrough (required)
-    ├── metadata.json         # Task metadata (required)
-    ├── Dockerfile            # Container setup (optional)
-    ├── docker-compose.yaml   # Docker config (optional)
-    └── assets/               # Resource URLs or files (optional)
-        └── urls.txt          # URLs to download files
-```
-
-**After encryption (ready for PR):**
-```
-contributed-tasks/
-└── your-task-name/
-    ├── instruction.md.enc    # Encrypted instruction
-    ├── evaluation.md.enc     # Encrypted evaluation
-    ├── solution.md.enc       # Encrypted solution
-    ├── metadata.json.enc     # Encrypted metadata
-    ├── canary.txt            # Encryption key
-    ├── Dockerfile            # (unchanged)
-    ├── docker-compose.yaml   # (unchanged)
-    └── assets/               # (unchanged, e.g., urls.txt)
-```
-
----
-
 ## Step-by-Step Guide
 
 Here's a detailed walkthrough of creating your task. Take your time — quality matters more than speed!
@@ -122,7 +88,7 @@ Then create these files in your task folder:
 - `solution.md` - Step-by-step human solution
 - `metadata.json` - Task metadata
 
-See the templates below or check `cocoabench-example-tasks/` for examples.
+See the [File Specifications](#file-specifications) below or check `cocoabench-example-tasks/` for examples.
 
 ### Step 2: Validate Your Task
 
@@ -177,26 +143,59 @@ Then open a PR on GitHub with:
 
 ---
 
-## Useful Commands
+## Best Practices
 
-```bash
-# Run from the contrib/ directory
-cd contrib
+1. **Ensure tasks are deterministic** – Same input should always yield same answer
+2. **Include clear success criteria** – The answer should be unambiguous
+3. **Test your task thoroughly** – Solve it yourself before submission
 
-# Create a new task interactively
-python create_task.py
+---
 
-# Validate a specific task
-python validate_task.py <task-name>
+## Need Help?
 
-# Validate all tasks
-python validate_task.py --all
+We're here to help! Here are some resources:
 
-# Encrypt a specific task
-python encrypt_tasks.py --task <task-name>
+- 📂 Check existing tasks in `cocoabench-example-tasks/` for reference
+- 🔍 Run `python validate_task.py --all` to explore how other tasks are structured
 
-# Encrypt all tasks
-python encrypt_tasks.py
+If you have questions or run into issues, feel free to open an issue on GitHub. We're happy to help!
+
+Thanks for contributing — we really appreciate it! 🙏
+
+---
+
+# Reference
+
+## Task Structure
+
+Your contributed tasks will go in the `contributed-tasks/` folder. (The `cocoabench-example-tasks/` folder contains reference examples you can learn from.)
+
+**Before encryption:**
+```
+contributed-tasks/
+└── your-task-name/
+    ├── instruction.md        # Task instruction (required)
+    ├── evaluation.md         # Evaluation criteria (required)
+    ├── solution.md           # Solution walkthrough (required)
+    ├── metadata.json         # Task metadata (required)
+    ├── Dockerfile            # Container setup (optional)
+    ├── docker-compose.yaml   # Docker config (optional)
+    └── assets/               # Resource URLs or files (optional)
+        └── urls.txt          # URLs to download files
+```
+
+**After encryption (ready for PR):**
+```
+contributed-tasks/
+└── your-task-name/
+    ├── instruction.md.enc    # Encrypted instruction
+    ├── evaluation.md.enc     # Encrypted evaluation
+    ├── solution.md.enc       # Encrypted solution
+    ├── metadata.json.enc     # Encrypted metadata
+    ├── canary.txt            # Encryption key
+    ├── Dockerfile            # (unchanged)
+    ├── docker-compose.yaml   # (unchanged)
+    └── assets/               # (unchanged, e.g., urls.txt)
 ```
 
 ---
@@ -268,11 +267,11 @@ The final output of an agent should be easy to evaluate programmatically, ideall
 
 | Type | Format |
 |------|--------|
-| Image file | `Image: https://drive.google.com/file/d/...` |
-| Web UI | `Host UI: https://example.com/page` |
+| Google Drive file | `Image: https://drive.google.com/file/d/...` |
 | Google Drive folder | `Folder: https://drive.google.com/drive/folders/...` |
+| Web UI | `Host UI: https://example.com/page` |
 | Local files | `Local: assets/` |
-| None needed | `None` or `None (web browsing only)` |
+| None needed | `None` |
 
 **Multiple Resources:**
 
@@ -285,6 +284,8 @@ When a task requires multiple resources, list each on a separate line with clear
 - Data: https://drive.google.com/file/d/xyz789/view
 - Host UI: https://example.com/app
 ```
+
+---
 
 ### 3. `solution.md` – Human Solution Walkthrough
 
@@ -331,79 +332,3 @@ Documents how a human would solve the task step-by-step.
 | `stage` | string | `"Brainstorm"` → `"Approved"` (after review) |
 | `self_checked` | string | `"yes"` after you've verified the solution |
 | `reviewers` | object | Filled by reviewers: `{"reviewer_1_name": "Pass"}` |
-
----
-
-## Output Format Standards
-
-All tasks must use one of these standardized output formats:
-
-### Simple Answer Tag (Most Common)
-```
-<answer>value</answer>
-```
-
-### Multi-line Answer Tag
-```
-<answer>
-Line 1
-Line 2
-</answer>
-```
-
-### JSON Output
-```json
-{
-  "field": "value"
-}
-```
-
-### File Output
-Specify exact file path and format in the instruction.
-
----
-
-## Best Practices
-
-1. **Ensure tasks are deterministic** – Same input should always yield same answer
-2. **Include clear success criteria** – The answer should be unambiguous
-3. **Test your task thoroughly** – Solve it yourself before submission
-
----
-
-## Review Process
-
-1. **Brainstorm** – Create your task with `"stage": "Brainstorm"`
-2. **Self-Check** – Verify solution works, set `"self_checked": "yes"`
-3. **Peer Review** – Another contributor validates and adds to `reviewers`
-4. **Approval** – After passing review, stage changes to `"Approved"`
-
----
-
-## Task Categories
-
-Consider which category your task fits:
-
-| Category | Examples |
-|----------|----------|
-| **Research & Analysis** | Paper analysis, citation networks, genealogy |
-| **Visual Perception** | Image recognition, country identification, figure analysis |
-| **Web Navigation** | Multi-step web tasks, form filling, data extraction |
-| **Data Processing** | CSV analysis, statistical computation, visualization |
-| **Reasoning** | Constraint satisfaction, optimization, logical deduction |
-| **Domain Knowledge** | Sports, music, pharmaceuticals, AI/ML trends |
-
----
-
-## Need Help?
-
-We're here to help! Here are some resources:
-
-- 📂 Check existing tasks in `cocoabench-example-tasks/` for reference
-- 📖 See `TASKS_WITH_INITIALIZATION.md` for initialization patterns
-- 🔍 Run `python validate_task.py --all` to explore how other tasks are structured
-
-If you have questions or run into issues, feel free to open an issue on GitHub. We're happy to help!
-
-Thanks for contributing — we really appreciate it! 🙏
-
