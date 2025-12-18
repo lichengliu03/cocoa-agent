@@ -109,6 +109,7 @@ python inference_main.py \
 
 ## Configuration
 
+Edit your config file to customize the agent:
 
 ```json
 {
