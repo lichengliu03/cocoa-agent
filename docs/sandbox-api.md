@@ -1,8 +1,8 @@
-# 🔌 Sandbox API for Host-Side Scripts
+# Sandbox API for Host-Side Scripts
 
 Sometimes the agent's output and conversation history alone aren't enough to evaluate a task. For tasks where the agent creates files or modifies the environment, you can call Sandbox APIs from `test.py` to inspect container state.
 
-## 🛠️ Connecting to the Sandbox
+## Connecting to the Sandbox
 
 The sandbox client allows you to interact with the Docker container where the agent ran.
 
@@ -29,7 +29,7 @@ print(f"File content: {content}")
 
 ---
 
-## 📂 Common File APIs
+## Common File APIs
 
 Use these APIs to inspect the filesystem state inside the container.
 

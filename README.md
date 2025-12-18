@@ -31,18 +31,18 @@
 
 <br>
 
-## 📦 What's Inside
+## What's Inside
 
 - **CocoaBench Dataset** — Benchmark tasks designed around cognitive abilities (perception, reasoning, memory) rather than specific tools
 - **CocoaAgent Framework** — Model-agnostic agent executor that equips agents with general tools (browser, terminal, file operations, code interpreter) via [AIO Sandbox](https://github.com/agent-infra/sandbox)
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 - Python 3.13+
 - Docker & Docker Compose
 - [uv](https://github.com/astral-sh/uv) (recommended) or pip
 
-## ☕ Why CocoaBench?
+## Why CocoaBench?
 
 Current agent benchmarks often reward domain-specific workflows rather than general cognitive abilities. CocoaBench focuses on:
 
@@ -53,7 +53,7 @@ Current agent benchmarks often reward domain-specific workflows rather than gene
 
 Tasks are human-understandable and automatically evaluated, but designed to challenge agents that can adapt across domains rather than overfit to specific environments.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Option A: Use the Dataset Only (with your own agent)
 
@@ -77,7 +77,7 @@ ls cocoa-bench-v0.1/
 | `docker-compose.yaml` | Docker config |
 | `assets/` | Additional files for the task (optional) |
 
-**Evaluation:** Each `test.py` exports a `test(result)` function. If you're using your own agent, you typically just need to pass `{"task_result": "<agent's final answer>"}`. See [Evaluation](#-evaluation) for details.
+**Evaluation:** Each `test.py` exports a `test(result)` function. If you're using your own agent, you typically just need to pass `{"task_result": "<agent's final answer>"}`. See [Evaluation](#evaluation) for details.
 
 ### Option B: Run with CocoaAgent Framework
 
@@ -107,7 +107,7 @@ python inference_main.py \
 #   --output-dir results/
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 
 ```json
@@ -135,7 +135,7 @@ python inference_main.py \
 | `sandbox.docker_port` | Port for sandbox container (default: 8080) |
 | `sandbox.max_iterations` | Max agent iterations per task (default: 30) |
 
-## ⚖️ Evaluation
+## Evaluation
 
 Each task includes a `test.py` that runs on the host machine after the agent completes. The framework calls `test(result)` with the full execution result and expects a pass/fail verdict.
 
@@ -168,17 +168,17 @@ Results are saved to `results/<task-name>.json` when using the CocoaAgent framew
 
 **Learn more:**
 
-- [📖 Evaluation Guide](docs/evaluation.md) — Complete result dictionary structure and return format
-- [🔌 Sandbox API Reference](docs/sandbox-api.md) — How to access files and state inside the sandbox container
+- [Evaluation Guide](docs/evaluation.md) — Complete result dictionary structure and return format
+- [Sandbox API Reference](docs/sandbox-api.md) — How to access files and state inside the sandbox container
 
-## 🤝 Contributing New Tasks
+## Contributing New Tasks
 
 We welcome new benchmark tasks! See [contrib/CONTRIBUTING.md](contrib/CONTRIBUTING.md) for guidelines.
 
 > [!IMPORTANT]
 > Please encrypt your task before submitting a PR to keep benchmark data safe.
 
-## 📄 Citation
+## Citation
 
 ```bibtex
 @misc{cocoabench2025,
