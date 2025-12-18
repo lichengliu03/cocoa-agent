@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agent Visualization</title>
+    <!-- Prism.js for code highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         * {
             margin: 0;
@@ -720,7 +722,26 @@
 
                 header.textContent = `${actionType} - Iteration ${stepData.iter.iteration}`;
                 viewer.innerHTML = renderActionContent(action, stepData.actionData);
+                
+                // Trigger Prism highlighting after content is added
+                setTimeout(() => {
+                    if (window.Prism) {
+                        // Highlight all code blocks in the viewer
+                        const codeBlocks = viewer.querySelectorAll('code.language-python');
+                        codeBlocks.forEach(block => {
+                            Prism.highlightElement(block);
+                        });
+                    }
+                }, 100);
             }
+        }
+
+        // Check if observation contains base64 image
+        function observationContainsImage(observation) {
+            if (!observation) return false;
+            // Check if observation contains base64 image data
+            return observation.includes('data:image') || 
+                   (observation.length > 100 && /^[A-Za-z0-9+\/=\s]+$/.test(observation.substring(0, 100)));
         }
 
         // Render action content with better formatting
@@ -728,9 +749,27 @@
             const actionType = action.action_type || 'unknown';
             let content = '';
 
-            // Browser actions: show screenshot prominently
-            if (actionType.includes('browser') || ['CLICK', 'TYPING', 'NAVIGATE', 'screenshot', 'DOM_CLICK', 'DOM_GET_TEXT'].includes(actionType)) {
-                if (actionData.screenshot) {
+            // Browser actions: show screenshot prominently (only if screenshot exists)
+            // Check if this is a browser action that should show screenshot
+            const browserActionTypes = ['browser_navigate', 'browser_screenshot', 'browser_click', 'browser_type', 
+                                       'browser_press', 'browser_scroll', 'browser_move_to', 'browser_drag_to',
+                                       'CLICK', 'TYPING', 'NAVIGATE', 'screenshot', 'SCROLL', 'MOVE_TO', 'DRAG_TO'];
+            const isBrowserAction = browserActionTypes.includes(actionType) || actionType.includes('browser');
+            const isScreenshotAction = actionType === 'browser_screenshot' || actionType === 'screenshot';
+            
+            // Show screenshot for browser actions (except DOM actions which don't have screenshots)
+            // For screenshot action itself, screenshot is in observation, not in screenshot field
+            if (isBrowserAction && !actionType.startsWith('DOM_') && !isScreenshotAction && actionData.screenshot) {
+                content += `<div style="margin-bottom: 16px;"><img src="data:image/png;base64,${actionData.screenshot}" alt="Screenshot" style="max-width: 100%; border-radius: 8px; border: 1px solid #30363d;"></div>`;
+            }
+            
+            // For screenshot action, extract image from observation if present
+            if (isScreenshotAction && actionData.observation) {
+                // Try to extract base64 image from observation
+                const imgMatch = actionData.observation.match(/data:image\/[^;]+;base64,([A-Za-z0-9+\/=\s]+)/);
+                if (imgMatch) {
+                    content += `<div style="margin-bottom: 16px;"><img src="data:image/png;base64,${imgMatch[1]}" alt="Screenshot" style="max-width: 100%; border-radius: 8px; border: 1px solid #30363d;"></div>`;
+                } else if (actionData.screenshot) {
                     content += `<div style="margin-bottom: 16px;"><img src="data:image/png;base64,${actionData.screenshot}" alt="Screenshot" style="max-width: 100%; border-radius: 8px; border: 1px solid #30363d;"></div>`;
                 }
             }
@@ -783,15 +822,19 @@
             }
             // Other actions: show JSON format
             else {
-                if (actionData.screenshot) {
+                // Only show screenshot if not already shown above and not a browser action
+                if (!isBrowserAction && actionData.screenshot) {
                     content += `<div style="margin-bottom: 16px;"><img src="data:image/png;base64,${actionData.screenshot}" alt="Screenshot" style="max-width: 100%; border-radius: 8px; border: 1px solid #30363d;"></div>`;
                 }
+                
                 content += `<div class="action-details">`;
                 content += `<div style="background: #161b22; padding: 12px; border-bottom: 1px solid #30363d; font-size: 11px; color: #8b949e; font-weight: 600;">ACTION</div>`;
                 content += `<pre style="margin: 0; padding: 16px; background: #0d1117; border-radius: 0 0 8px 8px; overflow-x: auto;">${escapeHtml(JSON.stringify(action, null, 2))}</pre>`;
                 content += `</div>`;
                 
-                if (actionData.observation) {
+                // Show observation, but skip if it contains base64 image (already shown as screenshot)
+                // Also skip for screenshot actions since we already displayed the image
+                if (actionData.observation && !isScreenshotAction && !observationContainsImage(actionData.observation)) {
                     content += `<div class="observation-details" style="margin-top: 16px;">`;
                     content += `<div style="background: #161b22; padding: 12px; border-bottom: 1px solid #30363d; font-size: 11px; color: #8b949e; font-weight: 600;">OBSERVATION</div>`;
                     content += `<div class="file-content" style="padding: 16px; background: #0d1117; border-radius: 0 0 8px 8px; white-space: pre-wrap;">${escapeHtml(actionData.observation)}</div>`;
@@ -849,48 +892,19 @@
             content += `<div class="eval-viewer">`;
             content += `<div style="background: ${statusColor}; padding: 16px; border-radius: 8px 8px 0 0; color: white; font-weight: 600; font-size: 14px;">${statusText}</div>`;
             
+            // Always show feedback if available
             if (evalData.feedback) {
                 content += `<div style="background: #161b22; padding: 16px; border-bottom: 1px solid #30363d;">`;
                 content += `<div style="font-size: 11px; color: #8b949e; font-weight: 600; margin-bottom: 8px;">FEEDBACK</div>`;
-                content += `<div style="white-space: pre-wrap; color: #c9d1d9;">${escapeHtml(evalData.feedback)}</div>`;
+                content += `<div style="white-space: pre-wrap; color: #c9d1d9; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 12px;">${escapeHtml(evalData.feedback)}</div>`;
                 content += `</div>`;
             }
             
+            // Show all details as JSON in a unified format
             if (evalData.details) {
-                content += `<div style="background: #161b22; padding: 16px;">`;
+                content += `<div style="background: #161b22; padding: 16px; border-radius: 0 0 8px 8px;">`;
                 content += `<div style="font-size: 11px; color: #8b949e; font-weight: 600; margin-bottom: 8px;">DETAILS</div>`;
-                
-                // Show output_json if available
-                if (evalData.details.output_json) {
-                    content += `<div style="margin-bottom: 12px;">`;
-                    content += `<div style="font-size: 11px; color: #58a6ff; margin-bottom: 4px;">Output JSON:</div>`;
-                    content += `<pre style="background: #0d1117; padding: 12px; border-radius: 6px; overflow-x: auto; margin: 0;">${escapeHtml(JSON.stringify(evalData.details.output_json, null, 2))}</pre>`;
-                    content += `</div>`;
-                }
-                
-                // Show expected values if available
-                if (evalData.details.expected_regime_count !== undefined || evalData.details.expected_breakpoints) {
-                    content += `<div style="margin-bottom: 12px;">`;
-                    content += `<div style="font-size: 11px; color: #58a6ff; margin-bottom: 4px;">Expected:</div>`;
-                    if (evalData.details.expected_regime_count !== undefined) {
-                        content += `<div style="color: #c9d1d9;">Regime Count: ${evalData.details.expected_regime_count}</div>`;
-                    }
-                    if (evalData.details.expected_breakpoints) {
-                        content += `<div style="color: #c9d1d9;">Breakpoints: ${JSON.stringify(evalData.details.expected_breakpoints)}</div>`;
-                    }
-                    content += `</div>`;
-                }
-                
-                // Show other details as JSON
-                const detailsCopy = { ...evalData.details };
-                delete detailsCopy.output_json;
-                delete detailsCopy.expected_regime_count;
-                delete detailsCopy.expected_breakpoints;
-                
-                if (Object.keys(detailsCopy).length > 0) {
-                    content += `<pre style="background: #0d1117; padding: 12px; border-radius: 6px; overflow-x: auto; margin: 0; font-size: 11px;">${escapeHtml(JSON.stringify(detailsCopy, null, 2))}</pre>`;
-                }
-                
+                content += `<pre style="background: #0d1117; padding: 16px; border-radius: 6px; overflow-x: auto; margin: 0; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 12px; color: #c9d1d9;">${escapeHtml(JSON.stringify(evalData.details, null, 2))}</pre>`;
                 content += `</div>`;
             }
             
@@ -915,6 +929,10 @@
         // Initialize
         loadFileList();
     </script>
+    <!-- Load Prism.js after DOM is ready -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 </body>
 </html>
 
