@@ -328,10 +328,66 @@ class OpenAIDeepResearchAgent(BaseAgent):
                         )
                 
                 # Access outputs (requires include parameter)
+                # outputs is a list of output items from code execution
                 if hasattr(item, "outputs") and item.outputs is not None:
-                    step["outputs"] = item.outputs
+                    # outputs is a list, convert to a more readable format
+                    outputs_list = []
+                    for out in item.outputs:
+                        if hasattr(out, "type"):
+                            out_dict = {"type": out.type}
+                            if hasattr(out, "text"):
+                                out_dict["text"] = out.text
+                            if hasattr(out, "image"):
+                                out_dict["image"] = getattr(out.image, "file_id", None) if hasattr(out, "image") else None
+                            if hasattr(out, "log"):
+                                out_dict["log"] = out.log
+                            outputs_list.append(out_dict)
+                        elif isinstance(out, dict):
+                            outputs_list.append(out)
+                        else:
+                            # Try to convert to dict if possible
+                            try:
+                                if hasattr(out, "__dict__"):
+                                    outputs_list.append(out.__dict__)
+                                else:
+                                    outputs_list.append(str(out))
+                            except:
+                                outputs_list.append(str(out))
+                    step["outputs"] = outputs_list if outputs_list else None
                 else:
                     step["outputs"] = None
+                
+                # Try to extract output from outputs if output is None
+                # Sometimes API only returns outputs array, not single output field
+                if step["output"] is None and step["outputs"]:
+                    # Extract text output from outputs array
+                    text_outputs = []
+                    for out in step["outputs"]:
+                        if isinstance(out, dict):
+                            if out.get("type") == "text" and "text" in out:
+                                text_outputs.append(out["text"])
+                            elif "text" in out:
+                                text_outputs.append(out["text"])
+                            elif "log" in out:
+                                text_outputs.append(str(out["log"]))
+                        elif hasattr(out, "text"):
+                            text_outputs.append(out.text)
+                        elif hasattr(out, "log"):
+                            text_outputs.append(str(out.log))
+                    if text_outputs:
+                        step["output"] = "\n".join(text_outputs)
+                
+                # If still no output, check if there's a result or error field
+                if step["output"] is None:
+                    # Try to get error or result message
+                    error_msg = getattr(item, "error", None)
+                    if error_msg:
+                        step["output"] = f"Error: {error_msg}"
+                    else:
+                        # Check for result field
+                        result = getattr(item, "result", None)
+                        if result:
+                            step["output"] = str(result)
             
             elif item.type == "file_search_call":
                 file_search_count += 1
