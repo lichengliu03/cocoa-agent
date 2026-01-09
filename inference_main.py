@@ -10,7 +10,7 @@ from typing import Any, Dict, List
 
 import yaml
 
-from agents import BaseAgent, CocoaAgent, OpenAIDeepResearchAgent
+from agents import BaseAgent, CocoaAgent, OpenAIDeepResearchAgent, GeminiDeepResearchAgent
 from executor.utils import setup_logging, load_config, get_logger
 from decrypt_utils import decrypt_file_to_memory, read_canary
 
@@ -140,6 +140,8 @@ def main():
     
     if agent_type == "openai_deep_research":
         agent = OpenAIDeepResearchAgent(config)
+    elif agent_type == "gemini_deep_research":
+        agent = GeminiDeepResearchAgent(config)
     elif agent_type == "cocoa":
         agent = CocoaAgent(config)
     else:
