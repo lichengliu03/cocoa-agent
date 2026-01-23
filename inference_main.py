@@ -172,6 +172,44 @@ def main():
 
     logger.info(f"Processed {len(tasks)} tasks. Results saved to {args.output_dir}")
 
+    # Calculate statistics
+    total_tasks = 0
+    passed_tasks = 0
+    passed_list = []
+    
+    output_path = Path(args.output_dir)
+    if output_path.exists():
+        for json_file in output_path.glob("*.json"):
+            try:
+                with open(json_file, 'r') as f:
+                    data = json.load(f)
+                    total_tasks += 1
+                    if data.get("eval", {}).get("passed", False) is True:
+                        passed_tasks += 1
+                        passed_list.append(json_file.stem)
+            except Exception as e:
+                logger.error(f"Error reading {json_file}: {e}")
+
+    success_rate = (passed_tasks / total_tasks * 100) if total_tasks > 0 else 0.0
+    
+    stats_content = (
+        f"Total Tasks: {total_tasks}\n"
+        f"Passed: {passed_tasks}\n"
+        f"Failed: {total_tasks - passed_tasks}\n"
+        f"Success Rate: {success_rate:.2f}%\n"
+    )
+    
+    if passed_list:
+        stats_content += "\nPassed Tasks:\n"
+        for task_name in sorted(passed_list):
+            stats_content += f"  - {task_name}\n"
+    
+    stats_file = output_path / "statistics.txt"
+    with open(stats_file, 'w') as f:
+        f.write(stats_content)
+        
+    logger.info(f"Statistics saved to {stats_file}")
+
 
 if __name__ == "__main__":
     main()
