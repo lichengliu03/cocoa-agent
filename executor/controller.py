@@ -353,6 +353,7 @@ Task:
 7. **MUST call `task_complete`** when finished, with result if applicable
 8. **No fabrication** - never invent URLs, filenames, or data
 9. **Stop retrying** after 6 failed browser actions - switch strategy or request help
+10. **Use `image_read` for images**: When you need to read or view a downloaded image, use the `image_read` tool. **DO NOT** use `code_execute` to display images (e.g., using matplotlib/PIL) because it produces large base64 outputs that exceed API length limits.
 """
 
 UNIFIED_FEEDBACK_PROMPT_TEMPLATE = """
@@ -661,6 +662,7 @@ To call a tool, use this format:
 7. **MUST call `task_complete`** when finished, with result if applicable
 8. **No fabrication** - never invent URLs, filenames, or data
 9. **Stop retrying** after 6 failed browser actions - switch strategy or request help
+10. **Use `image_read` for images**: When you need to read or view a downloaded image, use the `image_read` tool. **DO NOT** use `code_execute` to display images (e.g., using matplotlib/PIL) because it produces large base64 outputs that exceed API length limits.
 
 ## Summary
 Act visually, verify rigorously, and avoid blind exploration. Prefer one extra screenshot + VLM judgement before any ambiguous click.

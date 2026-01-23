@@ -15,7 +15,9 @@ def main():
     total_tasks = 0
     passed_tasks = 0
     failed_tasks = 0
+    error_tasks = 0
     passed_list = []
+    error_list = []
 
     print(f"Scanning directory: {output_path}")
 
@@ -24,7 +26,10 @@ def main():
             with open(json_file, 'r') as f:
                 data = json.load(f)
                 total_tasks += 1
-                if data.get("eval", {}).get("passed", False) is True:
+                if data.get("status") == "error":
+                    error_tasks += 1
+                    error_list.append(json_file.stem)
+                elif data.get("eval", {}).get("passed", False) is True:
                     passed_tasks += 1
                     passed_list.append(json_file.stem)
                 else:
@@ -38,6 +43,7 @@ def main():
     print(f"Total Tasks: {total_tasks}")
     print(f"Passed:      {passed_tasks}")
     print(f"Failed:      {failed_tasks}")
+    print(f"Errors:      {error_tasks}")
     print("-" * 30)
     print(f"Success Rate: {success_rate:.2f}%")
     print("-" * 30)
@@ -45,6 +51,12 @@ def main():
     if passed_list:
         print("\nPassed Tasks:")
         for task_name in sorted(passed_list):
+            print(f"  - {task_name}")
+        print("-" * 30)
+
+    if error_list:
+        print("\nError Tasks:")
+        for task_name in sorted(error_list):
             print(f"  - {task_name}")
         print("-" * 30)
 
