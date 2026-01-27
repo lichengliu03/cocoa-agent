@@ -22,6 +22,15 @@ try:
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
+    types = Any
+
+# Try to import Anthropic libraries
+try:
+    import anthropic
+    ANTHROPIC_AVAILABLE = True
+except ImportError:
+    ANTHROPIC_AVAILABLE = False
+    anthropic = Any
 
 logger = get_logger("llm")
 
@@ -1065,18 +1074,18 @@ class BaseLLM(Controller):
         if task_description is not None:
             # Initial prompt - only used for first iteration
             if hasattr(self, 'is_qwen_vl_model') and self.is_qwen_vl_model:
-                if self.client_type == "unified":
+                if self.client_type in ["unified", "shell"]:
                     return UNIFIED_INITIAL_PROMPT_TEMPLATE_QWEN3VL.format(instruction=task_description, tools_description=tools_description)
             else:
-                if self.client_type == "unified":
+                if self.client_type in ["unified", "shell"]:
                     return UNIFIED_INITIAL_PROMPT_TEMPLATE.format(instruction=task_description)
         if feedback is not None:
             # Feedback prompt - only contains feedback, context is maintained in self.messages
             if hasattr(self, 'is_qwen_vl_model') and self.is_qwen_vl_model:
-                if self.client_type == "unified":
+                if self.client_type in ["unified", "shell"]:
                     return UNIFIED_FEEDBACK_PROMPT_TEMPLATE_QWEN3VL.format(feedback=feedback)
             else:
-                if self.client_type == "unified":
+                if self.client_type in ["unified", "shell"]:
                     return UNIFIED_FEEDBACK_PROMPT_TEMPLATE.format(feedback=feedback)
         raise ValueError("No task description or feedback provided")
     
@@ -1920,6 +1929,273 @@ class QwenLLM(OpenAILLM):
                         if has_images:
                             self.messages[i] = self._remove_images_from_message(self.messages[i])
                             logger.debug(f"Removed images from old user message at index {i}")
+
+
+class ClaudeLLM(BaseLLM):
+    """Language model client using Anthropic Claude API."""
+
+    def __init__(self, llm_config: Dict[str, Any] | None = None, client_type: str = "shell", **kwargs):
+        if not ANTHROPIC_AVAILABLE:
+            raise ImportError("Anthropic libraries not available. Install with: pip install anthropic")
+        
+        # Initialize base class first
+        super().__init__(llm_config, client_type, **kwargs)
+        
+        if llm_config is None:
+            llm_config = {}
+
+        # Extract model and api_key from llm_config, with fallback to kwargs and env variables
+        self.model = llm_config.get("model", kwargs.get("model", "claude-3-5-sonnet-20241022"))
+        api_key = (
+            llm_config.get("api_key") or
+            kwargs.get("api_key") or
+            os.getenv("ANTHROPIC_API_KEY")
+        )
+        
+        if not api_key:
+            raise ValueError("Anthropic API key not found. Set ANTHROPIC_API_KEY environment variable, or provide in config.")
+
+        # Initialize Anthropic client
+        base_url = (
+            llm_config.get("base_url") or
+            kwargs.get("base_url") or
+            os.getenv("ANTHROPIC_BASE_URL")
+        )
+        
+        client_kwargs = {"api_key": api_key}
+        if base_url:
+            client_kwargs["base_url"] = base_url
+            
+        self.client = anthropic.Anthropic(**client_kwargs)
+
+        logger.info(f"ClaudeLLM initialized with model: {self.model}")
+        logger.debug(f"API key configured: {bool(api_key)}")
+        logger.debug(f"Client type: {self.client_type}")
+        logger.debug(f"Tool calling mode: {self.use_tools}")
+
+    def _convert_openai_tools_to_claude(self, openai_tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Convert OpenAI tool format to Claude tool format."""
+        claude_tools = []
+        for tool in openai_tools:
+            if tool.get("type") == "function":
+                func = tool.get("function", {})
+                claude_tool = {
+                    "name": func.get("name", ""),
+                    "description": func.get("description", ""),
+                    "input_schema": func.get("parameters", {})
+                }
+                claude_tools.append(claude_tool)
+        return claude_tools
+
+    def _prepare_message_content(self, prompt: str, images_base64: list = None) -> Any:
+        """Prepare message content for Claude API."""
+        # Handle backward compatibility
+        if images_base64 is not None and isinstance(images_base64, str):
+            images_base64 = [images_base64]
+        
+        if images_base64 and len(images_base64) > 0:
+            message_content = []
+            
+            # Add images first (or text first? Claude documentation says text/image order doesn't matter much but usually alternating)
+            # The user example has image first then text.
+            for img_base64 in images_base64:
+                message_content.append({
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/png", # Assuming PNG for now
+                        "data": img_base64,
+                    }
+                })
+            
+            # Add text
+            message_content.append({
+                "type": "text",
+                "text": prompt
+            })
+            
+            logger.debug(f"Adding {len(images_base64)} image(s) to message")
+            return message_content
+        else:
+            return prompt
+
+    def _make_api_call(self) -> Any:
+        """Make Claude API call."""
+        # Prepare API call parameters
+        api_params = {
+            "model": self.model,
+            "messages": self.messages,
+            "max_tokens": 4096, # Default max tokens
+        }
+        
+        # Add tools if in tool calling mode
+        if self.use_tools and self.tools:
+            api_params["tools"] = self._convert_openai_tools_to_claude(self.tools)
+        
+        return self.client.messages.create(**api_params)
+    
+    def _handle_api_response(self, response: Any, attempt: int, max_attempts: int) -> Dict[str, Any]:
+        """Handle Claude API response."""
+        # Calculate cost
+        if hasattr(response, "usage"):
+            usage = response.usage
+            # Simplified cost calculation (placeholder)
+            # You might want to implement accurate pricing for Claude models
+            input_tokens = getattr(usage, "input_tokens", 0)
+            output_tokens = getattr(usage, "output_tokens", 0)
+            
+            # Approximate cost (using Claude 3.5 Sonnet pricing as reference: $3/1M input, $15/1M output)
+            cost = (input_tokens / 1_000_000) * 3.00 + (output_tokens / 1_000_000) * 15.00
+            
+            self.total_cost += cost
+            self.total_input_tokens += input_tokens
+            self.total_output_tokens += output_tokens
+            self.api_calls += 1
+            
+            logger.info(f"API call cost: ${cost:.6f} | Total cost: ${self.total_cost:.6f}")
+
+        # Extract content
+        content_blocks = response.content
+        text_content = ""
+        tool_use_blocks = []
+        
+        for block in content_blocks:
+            if block.type == "text":
+                text_content += block.text
+            elif block.type == "tool_use":
+                tool_use_blocks.append(block)
+        
+        # Save think content
+        self.last_think = text_content if text_content else None
+        
+        # Add assistant message to history
+        # Claude expects the exact content blocks in history for assistant
+        # We need to reconstruct the content list
+        assistant_content = []
+        for block in content_blocks:
+            if block.type == "text":
+                assistant_content.append({"type": "text", "text": block.text})
+            elif block.type == "tool_use":
+                assistant_content.append({
+                    "type": "tool_use",
+                    "id": block.id,
+                    "name": block.name,
+                    "input": block.input
+                })
+        
+        self.messages.append({
+            "role": "assistant",
+            "content": assistant_content
+        })
+
+        # Handle tool calls
+        if tool_use_blocks:
+            tool_calls_list = []
+            for tool_use in tool_use_blocks:
+                tool_calls_list.append({
+                    "id": tool_use.id,
+                    "function": {
+                        "name": tool_use.name,
+                        "arguments": tool_use.input # Already a dict
+                    }
+                })
+            
+            logger.debug(f"Received {len(tool_calls_list)} tool calls from {self.model}")
+            
+            try:
+                parsed_response = self.parse_tool_calls_list(tool_calls_list)
+                logger.debug(f"Parsed tool calls (ACTION): \n{colorize(json.dumps(parsed_response, indent=2), 'YELLOW')}")
+                return parsed_response
+            except ValueError as parse_error:
+                logger.warning(f"Failed to parse tool calls: {parse_error}")
+                if attempt >= max_attempts:
+                     return {
+                        "action_type": "error",
+                        "error_message": str(parse_error),
+                        "tool_calls": tool_calls_list
+                    }
+                
+                # Add error message
+                self.messages.append({
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text", 
+                            "text": f"Error parsing tool calls: {str(parse_error)}"
+                        }
+                    ]
+                })
+                return self._handle_api_response(self._make_api_call(), attempt + 1, max_attempts)
+        else:
+            # Regular text response
+            logger.debug(f"Received response from {self.model} (length: {len(text_content)} chars)")
+            
+            try:
+                parsed_response = self.parse_response(text_content)
+                logger.debug(f"Parsed response (ACTION): \n{colorize(json.dumps(parsed_response, indent=2), 'YELLOW')}")
+                return parsed_response
+            except ValueError as parse_error:
+                logger.warning(f"Failed to parse assistant response: {parse_error}")
+                if attempt >= max_attempts:
+                    raise
+                
+                correction_prompt = (
+                    "Your previous response did not follow the required format. "
+                    "Always respond with either (a) a tool call, or (b) a JSON object describing the next action."
+                )
+                self.messages.append({
+                    "role": "user",
+                    "content": [{"type": "text", "text": correction_prompt}]
+                })
+                return self._handle_api_response(self._make_api_call(), attempt + 1, max_attempts)
+
+    def add_tool_message(self, tool_call_id: str, content: str) -> None:
+        """Append tool call results to the conversation history."""
+        if not tool_call_id:
+            return
+        if content is None:
+            content = ""
+        if not isinstance(content, str):
+            content = str(content)
+            
+        tool_message = {
+            "role": "user",
+            "content": [
+                {
+                    "type": "tool_result",
+                    "tool_use_id": tool_call_id,
+                    "content": content
+                }
+            ]
+        }
+        self.messages.append(tool_message)
+        logger.debug(f"Added tool message for {tool_call_id}: {content[:200]}")
+
+    def _remove_images_from_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
+        """Remove images from a message."""
+        content = message.get("content", "")
+        if isinstance(content, list):
+            # Filter out image items
+            new_content = [
+                item for item in content
+                if not (isinstance(item, dict) and item.get("type") == "image")
+            ]
+            message["content"] = new_content
+        return message
+
+    def _cleanup_old_user_message_images(self) -> None:
+        """Remove images from old user messages."""
+        # Find the last user message
+        last_user_msg_idx = None
+        for i in range(len(self.messages) - 1, -1, -1):
+            if self.messages[i].get("role") == "user":
+                last_user_msg_idx = i
+                break
+        
+        if last_user_msg_idx is not None:
+            for i in range(len(self.messages)):
+                if i != last_user_msg_idx and self.messages[i].get("role") == "user":
+                    self.messages[i] = self._remove_images_from_message(self.messages[i])
 
 
 class GeminiLLM(BaseLLM):

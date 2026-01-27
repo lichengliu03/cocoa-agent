@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from .logger import setup_logging, get_logger
-from .controller import OpenAILLM, QwenLLM, BaseLLM, Controller, Human, GeminiLLM
+from .controller import OpenAILLM, QwenLLM, BaseLLM, Controller, Human, GeminiLLM, ClaudeLLM
 from .sandbox import (
     BrowserSandboxClient,
     UnifiedSandboxClient,
@@ -30,6 +30,7 @@ __all__ = [
     "QwenLLM",
     "BaseLLM",
     "GeminiLLM",
+    "ClaudeLLM",
     "Controller",
     "Human",
     "BrowserSandboxClient",
@@ -122,6 +123,9 @@ class TaskExecutor:
             elif controller_type == "qwen":
                 llm_config = controller_config.get("args", {})
                 controller = QwenLLM(llm_config=llm_config, client_type=client_type)
+            elif controller_type == "claude":
+                llm_config = controller_config.get("args", {})
+                controller = ClaudeLLM(llm_config=llm_config, client_type=client_type)
             else:  # Default to OpenAILLM (handles "gpt", "openai", "llm", etc.)
                 llm_config = controller_config.get("args", {})
                 controller = OpenAILLM(llm_config=llm_config, client_type=client_type)
@@ -135,6 +139,11 @@ class TaskExecutor:
         elif client_type == "browser":
             self.sandbox_client = BrowserSandboxClient(sandbox_config=sandbox_config)
             logger.info("Using BrowserSandboxClient")
+        else:
+            # Default to UnifiedSandboxClient for "shell" or unknown types
+            # UnifiedSandboxClient supports all tools including shell
+            self.sandbox_client = UnifiedSandboxClient(sandbox_config=sandbox_config)
+            logger.info(f"Using UnifiedSandboxClient as fallback for client_type='{client_type}'")
 
     def setup_environment(self, task: dict, wait_time: int = 30) -> None:
         """Initialize the sandbox environment for task execution.
