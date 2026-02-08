@@ -1,0 +1,19 @@
+{
+  "id": 999,
+  "name": "fed-rate-cut-stock-inflection",
+  "brainstorm_by": "Your Name",
+  "stage": "Brainstorm",
+  "self_checked": "no",
+  "reviewers": {},
+  "task_properties": {
+    "difficulty": "medium",
+    "skills_required": ["web_interaction", "data_extraction", "statistical_analysis", "python_coding"],
+    "estimated_time_minutes": 15,
+    "requires_gui": true,
+    "requires_coding": true
+  },
+  "human_performance": {
+    "average_time_minutes": 10,
+    "success_rate": 0.95
+  }
+}
