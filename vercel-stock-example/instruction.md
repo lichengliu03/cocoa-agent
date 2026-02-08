@@ -50,7 +50,7 @@ A stock is considered "aligned with the rate cut" if at least one inflection occ
 Submit your answer as a single integer (0, 1, 2, or 3):
 
 ```
-<answer>2</answer>
+<answer>0</answer>
 ```
 
 This represents the count of stocks that satisfy the alignment condition.
