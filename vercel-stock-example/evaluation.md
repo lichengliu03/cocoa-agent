@@ -2,7 +2,7 @@
 
 ## Initialization
 
-Host UI: https://your-app.vercel.app
+Host UI: https://cocoa-agent.vercel.app/
 
 (Replace with your actual deployed Vercel URL)
 

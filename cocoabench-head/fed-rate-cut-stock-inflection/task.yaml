@@ -3,7 +3,7 @@ instruction: |-
 
   **Task:**
 
-  Visit the stock analysis dashboard at https://cocoa-agent.vercel.app (replace with your deployed URL) where you'll find three anonymized stock charts labeled "Stock A", "Stock B", and "Stock C". These represent three major technology companies during the period around the Fed's announcement.
+  Visit the stock analysis dashboard at https://cocoa-agent.vercel.app/ where you'll find three anonymized stock charts labeled "Stock A", "Stock B", and "Stock C". These represent three major technology companies during the period around the Fed's announcement.
 
   Your goal is to determine how many of these stocks show a "price inflection" aligned with the rate cut event.
 
@@ -49,7 +49,7 @@ instruction: |-
   Submit your answer as a single integer (0, 1, 2, or 3):
 
   ```
-  <answer>2</answer>
+  <answer>0</answer>
   ```
 
   This represents the count of stocks that satisfy the alignment condition.
