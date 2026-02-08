@@ -2,7 +2,7 @@ On September 18, 2024, the U.S. Federal Reserve announced a 50 basis point inter
 
 **Task:**
 
-Visit the stock analysis dashboard at https://your-app.vercel.app (replace with your deployed URL) where you'll find three anonymized stock charts labeled "Stock A", "Stock B", and "Stock C". These represent three major technology companies during the period around the Fed's announcement.
+Visit the stock analysis dashboard at https://cocoa-agent.vercel.app (replace with your deployed URL) where you'll find three anonymized stock charts labeled "Stock A", "Stock B", and "Stock C". These represent three major technology companies during the period around the Fed's announcement.
 
 Your goal is to determine how many of these stocks show a "price inflection" aligned with the rate cut event.
 
