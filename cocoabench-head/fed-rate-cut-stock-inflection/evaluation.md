@@ -12,18 +12,18 @@ Host UI: https://cocoa-agent.vercel.app
 
 ## Explanation
 
-Based on the actual stock data for NVIDIA (Stock A), Microsoft (Stock B), and AMD (Stock C):
+Based on the stock data for NVIDIA (Stock A), Microsoft (Stock B), and AMD (Stock C):
 
 ### Stock A (NVIDIA - NVDA)
-- Has inflection points on September 16 and September 20
+- Has inflection point on September 16, 2024
 - **Aligned with rate cut** ✓
 
 ### Stock B (Microsoft - MSFT)
-- No significant inflection points during September 16-20
+- No inflection points during September 16-20
 - **Not aligned** ✗
 
 ### Stock C (AMD)
-- Has inflection point on September 16
+- Has inflection point on September 16, 2024
 - **Aligned with rate cut** ✓
 
 Therefore, **2 stocks** (NVIDIA and AMD) satisfy the alignment condition.
@@ -31,18 +31,28 @@ Therefore, **2 stocks** (NVIDIA and AMD) satisfy the alignment condition.
 ## Detailed Calculation
 
 ### Stock A (NVDA) - September 16, 2024
-- r(16) = ln(114.27/110.09) = 0.0372
-- mean(r_{6:15}) = 0.0089
-- std(r_{6:15}) = 0.0124
-- Threshold = 0.0089 + 2×0.0124 = 0.0337
-- 0.0372 > 0.0337 ✓ **Inflection detected**
+- Price change: $104.00 → $108.00 (+3.85%)
+- r(16) = ln(108.00/104.00) = 0.0377
+- mean(r_{6:15}) = 0.0031
+- std(r_{6:15}) = 0.0021
+- Threshold = 0.0031 + 2×0.0021 = 0.0074
+- 0.0377 > 0.0074 ✓ **Inflection detected**
+
+### Stock B (MSFT) - September 16, 2024
+- Price change: $413.00 → $414.00 (+0.24%)
+- r(16) = ln(414.00/413.00) = 0.0024
+- mean(r_{6:15}) = 0.0024
+- std(r_{6:15}) = 0.0000
+- Threshold = 0.0024 + 2×0.0000 = 0.0025
+- 0.0024 < 0.0025 ✗ **No inflection**
 
 ### Stock C (AMD) - September 16, 2024
-- r(16) = ln(161.08/155.61) = 0.0344
-- mean(r_{6:15}) = 0.0118
-- std(r_{6:15}) = 0.0098
-- Threshold = 0.0118 + 2×0.0098 = 0.0314
-- 0.0344 > 0.0314 ✓ **Inflection detected**
+- Price change: $144.00 → $149.00 (+3.47%)
+- r(16) = ln(149.00/144.00) = 0.0341
+- mean(r_{6:15}) = 0.0031
+- std(r_{6:15}) = 0.0013
+- Threshold = 0.0031 + 2×0.0013 = 0.0053
+- 0.0341 > 0.0053 ✓ **Inflection detected**
 
 ## Agent Testing Results
 
